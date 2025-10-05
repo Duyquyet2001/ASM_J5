@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: asm-j5
+    env: docker
+    plan: free
+    region: singapore
+    buildCommand: mvn clean package -DskipTests
+    startCommand: java -jar target/*.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: render
