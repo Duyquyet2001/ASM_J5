@@ -1,11 +1,12 @@
-# Sử dụng JDK 17 làm môi trường build
+# ====== BUILD STAGE ======
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
+
+# ====== RUN STAGE ======
 FROM openjdk:17-jdk-slim
-
-# Copy file .jar từ thư mục target
-COPY target/*.jar app.jar
-
-# Mở cổng 8080 cho ứng dụng
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-
-# Lệnh chạy app
-ENTRYPOINT ["java","-jar","/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
