@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<body>
+<div layout:fragment="content">
+
+    <!-- Tiêu đề & nút xuất -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-primary mb-0">
+            <i class="bi bi-clock-history me-2"></i>
+            <span th:text="#{history.title}">Lịch sử mượn – trả thiết bị</span>
+        </h3>
+        <a th:href="@{/export/muon-tra}" class="btn btn-success">
+            <i class="bi bi-file-earmark-excel"></i>
+            <span th:text="#{history.export}">Xuất Excel</span>
+        </a>
+    </div>
+
+    <!-- Bảng hiển thị -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0" th:text="#{history.pageTitle}">Danh sách lịch sử mượn – trả</h5>
+        </div>
+
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead class="table-primary text-center">
+                <tr>
+                    <th th:text="#{history.id}">STT</th>
+                    <th th:text="#{history.borrowCode}">Mã Phiếu</th>
+                    <th th:text="#{history.deviceName}">Tên Thiết Bị</th>
+                    <th th:text="#{history.borrowDate}">Ngày Mượn</th>
+                    <th th:text="#{history.returnDate}">Ngày Trả</th>
+                    <th th:text="#{history.status}">Trạng Thái</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="ct, stat : ${history}">
+                    <td th:text="${stat.index + 1}" class="text-center"></td>
+                    <td th:text="${ct.phieuMuon.maPhieu}" class="text-center fw-semibold"></td>
+                    <td th:text="${ct.thietBi.tenThietBi}" class="text-center"></td>
+                    <td th:text="${ct.phieuMuon.ngayMuon}" class="text-center"></td>
+
+                    <td class="text-center"
+                        th:text="${ct.ngayTra != null ? ct.ngayTra : 'Chưa trả'}"
+                        th:classappend="${ct.ngayTra == null} ? 'text-danger' : 'text-success'"></td>
+
+                    <td class="text-center fw-bold"
+                        th:text="${ct.trangThai}"
+                        th:classappend="${ct.trangThai == 'Đã trả'} ? 'text-success' : 'text-warning'"></td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(history)}">
+                    <td colspan="6" class="text-center text-muted py-3" th:text="#{history.noData}">
+                        Không có dữ liệu mượn – trả
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

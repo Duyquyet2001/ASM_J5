@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<body>
+<div layout:fragment="content" class="container-fluid">
+
+    <!-- Tiêu đề -->
+    <h3 class="mb-3" th:text="#{borrow.list}">Danh sách Phiếu Mượn</h3>
+
+    <!-- Bảng danh sách phiếu mượn -->
+    <table class="table table-striped table-bordered table-hover align-middle">
+        <thead class="table-dark text-center">
+        <tr>
+            <th>ID</th>
+            <th th:text="#{borrow.id}">Mã Phiếu</th>
+            <th th:text="#{borrow.date}">Ngày Mượn</th>
+            <th th:text="#{borrow.status}">Trạng Thái</th>
+            <th th:text="#{borrow.devices}">Thiết Bị</th>
+            <th th:text="#{device.action}">Hành Động</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="pm : ${dsPhieuMuon}" class="text-center">
+            <td th:text="${pm.id}"></td>
+            <td th:text="${pm.maPhieu}"></td>
+            <td th:text="${pm.ngayMuon}"></td>
+
+            <!-- Trạng thái -->
+            <td>
+                <span th:if="${pm.trangThai}" class="badge bg-warning text-dark" th:text="#{borrow.pending}">Đang mượn</span>
+                <span th:if="${!pm.trangThai}" class="badge bg-success" th:text="#{borrow.returned}">Đã trả</span>
+            </td>
+
+            <!-- Thiết bị -->
+            <td>
+                <span th:each="tb, iter : ${pm.thietBis}">
+                    <span th:text="${tb.tenThietBi + ' (' + tb.maThietBi + ')'}"></span>
+                    <span th:if="${!iter.last}">, </span>
+                </span>
+            </td>
+
+            <!-- Hành động -->
+            <td class="text-nowrap">
+
+                <!-- 🟦 Nút Sửa -->
+                <a class="btn btn-sm btn-primary me-2"
+                   th:href="@{/phieu-muon/edit/{id}(id=${pm.id})}">
+                    <i class="bi bi-pencil-square me-1"></i>
+                    <span th:text="#{device.edit}">Sửa</span>
+                </a>
+
+                <!-- 🟩 Nút Trả phiếu -->
+                <form th:if="${pm.trangThai}"
+                      th:action="@{/phieu-muon/return/{id}(id=${pm.id})}"
+                      method="get" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-success me-2">
+                        <i class="bi bi-arrow-return-left me-1"></i>
+                        <span th:text="#{btn.return}">Trả Phiếu</span>
+                    </button>
+                </form>
+
+                <!-- 🟥 Xóa phiếu -->
+                <a class="btn btn-sm btn-danger"
+                   th:href="@{/phieu-muon/delete/{id}(id=${pm.id})}"
+                   th:onclick="|return confirm('#{confirm.delete}')|">
+                    <i class="bi bi-trash me-1"></i>
+                    <span th:text="#{btn.delete}">Xóa</span>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Form thêm phiếu mượn -->
+    <div class="card shadow mt-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0" th:text="#{borrow.add.title}">Thêm Phiếu Mượn</h5>
+        </div>
+
+        <div class="card-body">
+            <form th:action="@{/phieu-muon/add}" method="post">
+
+                <!-- Mã phiếu -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold" th:text="#{borrow.id}">Mã Phiếu</label>
+                    <input type="text" name="maPhieu" class="form-control" placeholder="Nhập mã phiếu..." required>
+                </div>
+
+                <!-- Ngày mượn -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold" th:text="#{borrow.date}">Ngày Mượn</label>
+                    <input type="date" name="ngayMuon" class="form-control" required>
+                </div>
+
+                <!-- Chọn thiết bị -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold" th:text="#{borrow.devices}">Chọn thiết bị:</label>
+                    <div class="border rounded p-2" style="max-height:200px; overflow-y:auto;">
+                        <div th:each="tb : ${dsThietBi}" class="form-check">
+                            <input class="form-check-input" type="checkbox" name="thietBiIds" th:value="${tb.id}">
+                            <label class="form-check-label"
+                                   th:text="${tb.tenThietBi + ' (' + tb.maThietBi + ')'}"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nút submit -->
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-plus-circle me-1"></i>
+                    <span th:text="#{borrow.add.btn}">Thêm mới</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

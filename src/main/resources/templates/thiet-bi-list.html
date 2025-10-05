@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<body>
+<div layout:fragment="content">
+
+    <!-- Tiêu đề -->
+    <h3 th:text="#{device.list}">Danh sách Thiết Bị</h3>
+
+    <!-- Bảng danh sách -->
+    <table class="table table-striped table-bordered table-hover mt-3">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th th:text="#{device.id}">Mã Thiết Bị</th>
+            <th th:text="#{device.name}">Tên Thiết Bị</th>
+            <th th:text="#{device.desc}">Mô Tả</th>
+            <th th:text="#{device.condition}">Tình Trạng</th>
+            <th th:text="#{device.status}">Trạng Thái</th>
+            <th th:text="#{device.action}">Hành Động</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="tb : ${dsThietBi}">
+            <td th:text="${tb.id}"></td>
+            <td th:text="${tb.maThietBi}"></td>
+            <td th:text="${tb.tenThietBi}"></td>
+            <td th:text="${tb.moTa}"></td>
+
+            <td>
+                <span th:if="${tb.tinhTrang}" class="badge bg-success">Còn mới</span>
+                <span th:if="${!tb.tinhTrang}" class="badge bg-danger">Đã hỏng</span>
+            </td>
+
+
+            <td>
+                <span th:if="${tb.daMuon}" th:text="#{device.borrowed}"></span>
+                <span th:if="${!tb.daMuon}" th:text="#{device.available}"></span>
+            </td>
+
+            <td>
+                <a class="btn btn-primary btn-sm"
+                   th:href="@{/thiet-bi/edit/{id}(id=${tb.id})}"
+                   th:text="#{device.edit}">Sửa</a>
+
+                <a class="btn btn-danger btn-sm"
+                   th:href="@{/thiet-bi/delete/{id}(id=${tb.id})}"
+                   th:onclick="|return confirm('#{confirm.delete}')|"
+                   th:text="#{device.delete}">Xóa</a>
+            </td>
+
+
+
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Form thêm thiết bị -->
+    <div class="card shadow mt-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0" th:text="#{device.add.title}">Thêm Thiết Bị</h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/thiet-bi/add}" method="post">
+                <div class="mb-3">
+                    <label class="form-label" th:text="#{device.id}">Mã Thiết Bị</label>
+                    <input type="text" name="maThietBi" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" th:text="#{device.name}">Tên Thiết Bị</label>
+                    <input type="text" name="tenThietBi" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" th:text="#{device.desc}">Mô Tả</label>
+                    <input type="text" name="moTa" class="form-control">
+                </div>
+
+                <input type="hidden" name="tinhTrang" value="true">
+
+                <button type="submit" class="btn btn-success"
+                        th:text="#{device.add.btn}">Thêm Thiết Bị</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
