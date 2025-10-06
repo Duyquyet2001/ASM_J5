@@ -13,47 +13,62 @@
 
         <div class="card-body">
             <form th:action="@{/phieu-muon/update}" method="post" th:object="${pm}">
+                <!-- ID -->
                 <input type="hidden" th:field="*{id}"/>
 
+                <!-- Mã phiếu -->
                 <div class="mb-3">
-                    <label class="form-label">Mã Phiếu</label>
+                    <label class="form-label fw-bold">Mã Phiếu</label>
                     <input type="text" th:field="*{maPhieu}" class="form-control"/>
                 </div>
 
+                <!-- Ngày mượn -->
                 <div class="mb-3">
-                    <label class="form-label">Ngày Mượn</label>
+                    <label class="form-label fw-bold">Ngày Mượn</label>
                     <input type="date" th:field="*{ngayMuon}" class="form-control"/>
                 </div>
 
+                <!-- Trạng thái -->
                 <div class="mb-3">
                     <label class="form-label fw-bold">Trạng Thái</label>
+
+                    <!-- Hiển thị màu badge -->
+                    <div class="mb-2">
+                        <span class="badge bg-success" th:if="${pm.trangThai}">Đã Trả</span>
+                        <span class="badge bg-warning text-dark" th:if="${!pm.trangThai}">Chưa Trả</span>
+                    </div>
+
+                    <!-- Ô readonly hiển thị trạng thái -->
                     <input type="text" class="form-control"
                            th:value="${pm.trangThai ? 'Đã Trả' : 'Chưa Trả'}" readonly>
 
-                    <!-- ẩn field thật để gửi đúng boolean -->
-                    <input type="hidden" th:field="*{trangThai}" th:value="${pm.trangThai}">
+                    <!-- Ẩn field boolean thật để submit -->
+                    <input type="hidden" th:field="*{trangThai}">
                 </div>
 
-
-
+                <!-- Danh sách thiết bị -->
                 <div class="mb-3">
-                    <label class="form-label">Thiết Bị Được Mượn</label>
+                    <label class="form-label fw-bold">Thiết Bị Được Mượn</label>
                     <div class="border rounded p-2" style="max-height:200px; overflow-y:auto;">
                         <div class="form-check" th:each="tb : ${dsThietBi}">
                             <input class="form-check-input" type="checkbox" name="thietBiIds"
                                    th:value="${tb.id}"
                                    th:checked="${pm.thietBis.contains(tb)}"/>
-                            <label class="form-check-label"
-                                   th:text="${tb.tenThietBi}"></label>
+                            <label class="form-check-label" th:text="${tb.tenThietBi}"></label>
                             <span th:text="${tb.daMuon ? ' (Đang mượn)' : ' (Sẵn sàng)'}"
                                   th:classappend="${tb.daMuon} ? 'text-warning' : 'text-success'"></span>
                         </div>
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between">
-                    <a th:href="@{/phieu-muon}" class="btn btn-secondary">⬅ Quay lại</a>
-                    <button type="submit" class="btn btn-success">💾 Lưu thay đổi</button>
+                <!-- Nút hành động -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a th:href="@{/phieu-muon}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save"></i> Lưu thay đổi
+                    </button>
                 </div>
             </form>
         </div>
