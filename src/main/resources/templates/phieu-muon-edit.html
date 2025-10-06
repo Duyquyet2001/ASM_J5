@@ -41,7 +41,7 @@
                                    th:value="${tb.id}"
                                    th:checked="${pm.thietBis.contains(tb)}"/>
                             <label class="form-check-label"
-                                   th:text="${tb.tenThietBi + ' (' + tb.maThietBi + ')'}"></label>
+                                   th:text="${tb.tenThietBi}"></label>
                             <span th:text="${tb.daMuon ? ' (Đang mượn)' : ' (Sẵn sàng)'}"
                                   th:classappend="${tb.daMuon} ? 'text-warning' : 'text-success'"></span>
                         </div>

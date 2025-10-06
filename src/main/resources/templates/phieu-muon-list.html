@@ -36,7 +36,7 @@
             <!-- Thiết bị -->
             <td>
                 <span th:each="tb, iter : ${pm.thietBis}">
-                    <span th:text="${tb.tenThietBi + ' (' + tb.maThietBi + ')'}"></span>
+                    <span th:text="${tb.tenThietBi}"></span>
                     <span th:if="${!iter.last}">, </span>
                 </span>
             </td>
@@ -101,7 +101,7 @@
                         <div th:each="tb : ${dsThietBi}" class="form-check">
                             <input class="form-check-input" type="checkbox" name="thietBiIds" th:value="${tb.id}">
                             <label class="form-check-label"
-                                   th:text="${tb.tenThietBi + ' (' + tb.maThietBi + ')'}"></label>
+                                   th:text="${tb.tenThietBi}"></label>
                         </div>
                     </div>
                 </div>
