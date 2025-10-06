@@ -9,3 +9,5 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: render
+      - key: JAVA_TOOL_OPTIONS
+        value: -Djava.awt.headless=true
