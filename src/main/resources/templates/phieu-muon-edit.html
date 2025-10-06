@@ -13,7 +13,7 @@
 
         <div class="card-body">
             <form th:action="@{/phieu-muon/update}" method="post" th:object="${pm}">
-                <!-- ID -->
+                <!-- ID ẩn -->
                 <input type="hidden" th:field="*{id}"/>
 
                 <!-- Mã phiếu -->
@@ -28,25 +28,19 @@
                     <input type="date" th:field="*{ngayMuon}" class="form-control"/>
                 </div>
 
-                <!-- Trạng thái -->
+                <!-- Trạng thái (dropdown chỉ hiển thị, không cho sửa) -->
                 <div class="mb-3">
                     <label class="form-label fw-bold">Trạng Thái</label>
-
-                    <!-- Hiển thị màu badge -->
-                    <div class="mb-2">
-                        <span class="badge bg-success" th:if="${pm.trangThai}">Đã Trả</span>
-                        <span class="badge bg-warning text-dark" th:if="${!pm.trangThai}">Chưa Trả</span>
-                    </div>
-
-                    <!-- Ô readonly hiển thị trạng thái -->
-                    <input type="text" class="form-control"
-                           th:value="${pm.trangThai ? 'Đã Trả' : 'Chưa Trả'}" readonly>
-
-                    <!-- Ẩn field boolean thật để submit -->
-                    <input type="hidden" th:field="*{trangThai}">
+                    <select class="form-select" onfocus="this.blur()">
+                        <!-- ⚠ Quy ước đúng: true = Chưa Trả, false = Đã Trả -->
+                        <option th:selected="${pm.trangThai}">Chưa Trả</option>
+                        <option th:selected="${!pm.trangThai}">Đã Trả</option>
+                    </select>
+                    <!-- Gửi giá trị thật về server -->
+                    <input type="hidden" name="trangThai" th:value="${pm.trangThai ? 'true' : 'false'}">
                 </div>
 
-                <!-- Danh sách thiết bị -->
+                <!-- Thiết bị được mượn -->
                 <div class="mb-3">
                     <label class="form-label fw-bold">Thiết Bị Được Mượn</label>
                     <div class="border rounded p-2" style="max-height:200px; overflow-y:auto;">
