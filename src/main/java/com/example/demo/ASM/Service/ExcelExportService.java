@@ -48,9 +48,10 @@ public class ExcelExportService {
                 row.createCell(5).setCellValue(item.getTrangThai());
             }
 
-            // ✅ Auto width
+            // ❌ Đừng dùng autoSizeColumn() trên server headless
+            // ✅ Thay bằng set độ rộng cột cố định (20 ký tự)
             for (int i = 0; i < headers.length; i++) {
-                sheet.autoSizeColumn(i);
+                sheet.setColumnWidth(i, 20 * 256);
             }
 
             workbook.write(out);
