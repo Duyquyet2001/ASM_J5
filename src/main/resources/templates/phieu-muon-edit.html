@@ -26,11 +26,14 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Trạng Thái</label>
+                    <label class="form-label fw-bold">Trạng Thái</label>
                     <input type="text" class="form-control"
                            th:value="${pm.trangThai ? 'Đã Trả' : 'Chưa Trả'}" readonly>
-                    <input type="hidden" th:field="*{trangThai}">
+
+                    <!-- ẩn field thật để gửi đúng boolean -->
+                    <input type="hidden" th:field="*{trangThai}" th:value="${pm.trangThai}">
                 </div>
+
 
 
                 <div class="mb-3">
