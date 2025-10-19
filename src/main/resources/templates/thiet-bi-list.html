@@ -112,6 +112,37 @@
         </tr>
         </tbody>
     </table>
+    <div class="text-center mt-3" th:if="${totalPages > 1}">
+        <nav aria-label="Pagination">
+            <ul class="pagination justify-content-center">
+
+                <!-- Trang trước -->
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/thiet-bi(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, tinhTrang=${tinhTrang}, daMuon=${daMuon})}">
+                        ‹‹
+                    </a>
+                </li>
+
+                <!-- Các số trang -->
+                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                    class="page-item"
+                    th:classappend="${i == currentPage} ? 'active'">
+                    <a class="page-link"
+                       th:text="${i + 1}"
+                       th:href="@{/thiet-bi(page=${i}, size=${pageSize}, keyword=${keyword}, tinhTrang=${tinhTrang}, daMuon=${daMuon})}"></a>
+                </li>
+
+                <!-- Trang sau -->
+                <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/thiet-bi(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, tinhTrang=${tinhTrang}, daMuon=${daMuon})}">
+                        ››
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
 
     <!-- Form thêm thiết bị -->
     <div class="card shadow mt-4">

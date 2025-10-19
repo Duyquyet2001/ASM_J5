@@ -127,22 +127,36 @@ public class PhieuMuonController {
         return "redirect:/phieu-muon";
     }
 
-
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable Integer id, HttpSession session) {
+    public String deletePhieuMuon(@PathVariable Integer id, HttpSession session) {
         try {
             PhieuMuon pm = phieuMuonRepo.findById(id).orElse(null);
-            if (pm != null) {
-                muonTraService.traHetPhieu(id);
-                phieuMuonRepo.delete(pm);
-                session.setAttribute("message", "🗑️ Đã xóa phiếu mượn " + pm.getMaPhieu() + " thành công!");
-            } else {
-                session.setAttribute("message", "⚠️ Không tìm thấy phiếu mượn có ID: " + id);
+            if (pm == null) {
+                session.setAttribute("message", "❌ Không tìm thấy phiếu mượn cần xóa!");
+                return "redirect:/phieu-muon";
             }
+
+            // 🟡 Bước 1: Trả trạng thái thiết bị về "chưa mượn"
+            for (ThietBi tb : pm.getThietBis()) {
+                tb.setDaMuon(false);
+                thietBiRepo.save(tb);
+            }
+
+            // 🟠 Bước 2: Dọn liên kết trong danh sách ManyToMany
+            pm.getThietBis().clear();
+            phieuMuonRepo.save(pm);
+
+            // 🔴 Bước 3: Xóa phiếu mượn
+            phieuMuonRepo.deleteById(id);
+
+            // 🟢 Bước 4: Thông báo
+            session.setAttribute("message",
+                    "✅ Đã xóa phiếu mượn '" + pm.getMaPhieu() + "' và cập nhật trạng thái thiết bị!");
         } catch (Exception e) {
             e.printStackTrace();
-            session.setAttribute("message", "❌ Lỗi khi xóa phiếu: " + e.getMessage());
+            session.setAttribute("message", "❌ Lỗi khi xóa phiếu mượn: " + e.getMessage());
         }
+
         return "redirect:/phieu-muon";
     }
 

@@ -2,7 +2,11 @@ package com.example.demo.ASM.Controller;
 
 import com.example.demo.ASM.Model.ThietBi;
 import com.example.demo.ASM.Repo.ThietBiRepo;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
@@ -27,22 +31,35 @@ public class ThietBiController {
             @RequestParam(required = false) Boolean daMuon,
             @RequestParam(defaultValue = "maThietBi") String sortField,
             @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(defaultValue = "0") int page,        // ✅ trang hiện tại
+            @RequestParam(defaultValue = "10") int size,       // ✅ số dòng mỗi trang
             Model model
     ) {
-        // Gộp các tiêu chí lọc
+        // 🟢 Lọc theo keyword, tình trạng, mượn
         Specification<ThietBi> spec = Specification
                 .where(ThietBiSpecification.keyword(keyword))
                 .and(ThietBiSpecification.byTinhTrang(tinhTrang))
                 .and(ThietBiSpecification.byDaMuon(daMuon));
 
-        // ✅ Thực hiện sắp xếp
+        // 🟢 Sắp xếp
         Sort sort = sortDir.equalsIgnoreCase("asc") ?
                 Sort.by(sortField).ascending() :
                 Sort.by(sortField).descending();
 
-        List<ThietBi> dsThietBi = repo.findAll(spec, sort);
+        // 🟢 Phân trang
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<ThietBi> pageThietBi = repo.findAll(spec, pageable);
 
+        // 🟣 Lấy dữ liệu trang hiện tại
+        List<ThietBi> dsThietBi = pageThietBi.getContent();
+
+        // 🟢 Đưa dữ liệu ra view
         model.addAttribute("dsThietBi", dsThietBi);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", pageThietBi.getTotalPages());
+        model.addAttribute("totalItems", pageThietBi.getTotalElements());
+        model.addAttribute("pageSize", size);
+
         model.addAttribute("keyword", keyword);
         model.addAttribute("tinhTrang", tinhTrang);
         model.addAttribute("daMuon", daMuon);
@@ -52,8 +69,11 @@ public class ThietBiController {
 
         model.addAttribute("pageTitle", "Quản lý Thiết Bị");
         model.addAttribute("activePage", "thietbi");
+        repo.flush();
+
         return "thiet-bi-list";
     }
+
 
 
 
@@ -68,10 +88,32 @@ public class ThietBiController {
 
     // 🟢 Xóa thiết bị
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable int id) {
-        repo.deleteById(id);
+    public String delete(@PathVariable int id, HttpSession session) {
+        try {
+            var tb = repo.findById(id).orElse(null);
+            if (tb == null) {
+                session.setAttribute("message", "❌ Không tìm thấy thiết bị cần xóa!");
+                return "redirect:/thiet-bi";
+            }
+
+            if (Boolean.TRUE.equals(tb.getDaMuon())) {
+                session.setAttribute("message",
+                        "⚠️ Thiết bị '" + tb.getTenThietBi() + "' đang được mượn, không thể xóa!");
+                return "redirect:/thiet-bi";
+            }
+
+            // ✅ Xóa thiết bị — DB tự xử lý liên kết (ON DELETE CASCADE)
+            repo.deleteById(id);
+
+            session.setAttribute("message", "✅ Đã xóa thiết bị '" + tb.getTenThietBi() + "' thành công!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.setAttribute("message", "❌ Lỗi khi xóa thiết bị: " + e.getMessage());
+        }
+
         return "redirect:/thiet-bi";
     }
+
 
     // 🟢 Hiện form sửa thiết bị
     @GetMapping("/edit/{id}")
