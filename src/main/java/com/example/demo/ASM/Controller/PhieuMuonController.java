@@ -7,6 +7,9 @@ import com.example.demo.ASM.Repo.ThietBiRepo;
 import com.example.demo.ASM.Service.MuonTraService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -27,7 +30,6 @@ public class PhieuMuonController {
     private final MuonTraService muonTraService;
 
     // 🟢 Hiển thị danh sách phiếu mượn
-    // 🟢 Hiển thị danh sách phiếu mượn
     @GetMapping
     public String getAll(
             @RequestParam(required = false) String keyword,
@@ -36,24 +38,29 @@ public class PhieuMuonController {
             @RequestParam(required = false) Integer thietBiId,
             @RequestParam(defaultValue = "maPhieu") String sortField,
             @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(defaultValue = "0") int page,              // ✅ thêm phân trang
+            @RequestParam(defaultValue = "10") int size,             // ✅ số dòng mỗi trang
             Model model,
-            HttpSession session // ✅ thêm dòng này
+            HttpSession session
     ) {
-        // Gộp điều kiện lọc
         Specification<PhieuMuon> spec = Specification
                 .where(PhieuMuonSpecification.keyword(keyword))
                 .and(PhieuMuonSpecification.ngayMuonBetween(fromDate, toDate))
                 .and(PhieuMuonSpecification.byThietBiId(thietBiId));
 
-        // 🟢 Sắp xếp
-        Sort sort = sortDir.equalsIgnoreCase("asc") ?
-                Sort.by(sortField).ascending() :
-                Sort.by(sortField).descending();
+        Sort sort = sortDir.equalsIgnoreCase("asc")
+                ? Sort.by(sortField).ascending()
+                : Sort.by(sortField).descending();
 
-        List<PhieuMuon> dsPhieuMuon = phieuMuonRepo.findAll(spec, sort);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<PhieuMuon> pagePhieuMuon = phieuMuonRepo.findAll(spec, pageable);
 
-        // 🟢 Đưa dữ liệu ra view
-        model.addAttribute("dsPhieuMuon", dsPhieuMuon);
+        model.addAttribute("dsPhieuMuon", pagePhieuMuon.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", pagePhieuMuon.getTotalPages());
+        model.addAttribute("totalItems", pagePhieuMuon.getTotalElements());
+        model.addAttribute("pageSize", size);
+
         model.addAttribute("dsThietBi", thietBiRepo.findByTinhTrangTrueAndDaMuonFalse());
         model.addAttribute("keyword", keyword);
         model.addAttribute("fromDate", fromDate);
@@ -65,11 +72,10 @@ public class PhieuMuonController {
         model.addAttribute("pageTitle", "Quản lý Phiếu Mượn");
         model.addAttribute("activePage", "phieu");
 
-        // ✅ Lấy message từ session nếu có
         Object message = session.getAttribute("message");
         if (message != null) {
             model.addAttribute("message", message);
-            session.removeAttribute("message"); // xóa để chỉ hiển thị 1 lần
+            session.removeAttribute("message");
         }
 
         return "phieu-muon-list";

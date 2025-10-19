@@ -149,6 +149,31 @@
         </tr>
         </tbody>
     </table>
+    <div class="text-center mt-3" th:if="${totalPages > 1}">
+        <nav>
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/phieu-muon(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, fromDate=${fromDate}, toDate=${toDate}, thietBiId=${thietBiId})}">
+                        ‹‹ Trang trước
+                    </a>
+                </li>
+
+                <li class="page-item disabled">
+                    <a class="page-link">
+                        Trang <span th:text="${currentPage + 1}"></span> / <span th:text="${totalPages}"></span>
+                    </a>
+                </li>
+
+                <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/phieu-muon(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, fromDate=${fromDate}, toDate=${toDate}, thietBiId=${thietBiId})}">
+                        Trang sau ››
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
 
     <!-- Form thêm phiếu mượn -->
     <div class="card shadow mt-4">
