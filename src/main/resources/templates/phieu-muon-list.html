@@ -149,13 +149,42 @@
         </tr>
         </tbody>
     </table>
-    <div class="text-center mt-3" th:if="${totalPages > 1}">
-        <nav>
-            <ul class="pagination justify-content-center">
+    <!-- 🟢 PHÂN TRANG -->
+    <div class="mt-4 d-flex justify-content-between align-items-center flex-wrap">
+        <!-- Tổng số bản ghi -->
+        <div>
+            <p class="mb-0">
+                Hiển thị <strong th:text="${dsPhieuMuon.size()}"></strong> /
+                <strong th:text="${totalItems}"></strong> phiếu mượn
+            </p>
+        </div>
+
+        <!-- Bộ chọn số dòng -->
+        <form th:action="@{/phieu-muon}" method="get" class="d-flex align-items-center">
+            <input type="hidden" name="keyword" th:value="${keyword}">
+            <input type="hidden" name="fromDate" th:value="${fromDate}">
+            <input type="hidden" name="toDate" th:value="${toDate}">
+            <input type="hidden" name="thietBiId" th:value="${thietBiId}">
+            <input type="hidden" name="sortField" th:value="${sortField}">
+            <input type="hidden" name="sortDir" th:value="${sortDir}">
+
+            <label for="pageSize" class="me-2">Hiển thị:</label>
+            <select id="pageSize" name="size" class="form-select form-select-sm me-3"
+                    onchange="this.form.submit()">
+                <option th:value="5" th:selected="${pageSize == 5}">5</option>
+                <option th:value="10" th:selected="${pageSize == 10}">10</option>
+                <option th:value="20" th:selected="${pageSize == 20}">20</option>
+                <option th:value="50" th:selected="${pageSize == 50}">50</option>
+            </select>
+        </form>
+
+        <!-- Nút chuyển trang -->
+        <nav th:if="${totalPages > 1}">
+            <ul class="pagination mb-0">
                 <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
                     <a class="page-link"
                        th:href="@{/phieu-muon(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, fromDate=${fromDate}, toDate=${toDate}, thietBiId=${thietBiId})}">
-                        ‹‹ Trang trước
+                        ‹‹
                     </a>
                 </li>
 
@@ -168,12 +197,13 @@
                 <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
                     <a class="page-link"
                        th:href="@{/phieu-muon(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, fromDate=${fromDate}, toDate=${toDate}, thietBiId=${thietBiId})}">
-                        Trang sau ››
+                        ››
                     </a>
                 </li>
             </ul>
         </nav>
     </div>
+
 
     <!-- Form thêm phiếu mượn -->
     <div class="card shadow mt-4">
