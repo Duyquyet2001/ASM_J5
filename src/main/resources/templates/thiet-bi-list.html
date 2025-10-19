@@ -8,12 +8,65 @@
     <!-- Tiêu đề -->
     <h3 class="mb-3" th:text="#{device.list}">Danh sách Thiết Bị</h3>
 
+    <!-- 🔍 Form lọc & tìm kiếm -->
+    <form th:action="@{/thiet-bi}" method="get" class="row g-2 mb-3 align-items-end">
+
+        <!-- Từ khóa -->
+        <div class="col-md-3">
+            <label class="form-label fw-bold">Từ khóa</label>
+            <input type="text" name="keyword" th:value="${keyword}" class="form-control"
+                   placeholder="Nhập mã hoặc tên thiết bị...">
+        </div>
+
+        <!-- Tình trạng -->
+        <div class="col-md-3">
+            <label class="form-label fw-bold">Tình trạng</label>
+            <select name="tinhTrang" class="form-select">
+                <option value="">-- Tất cả --</option>
+                <option value="true" th:selected="${tinhTrang} == true">Còn mới</option>
+                <option value="false" th:selected="${tinhTrang} == false">Đã hỏng</option>
+            </select>
+        </div>
+
+        <!-- Trạng thái mượn -->
+        <div class="col-md-3">
+            <label class="form-label fw-bold">Trạng thái</label>
+            <select name="daMuon" class="form-select">
+                <option value="">-- Tất cả --</option>
+                <option value="true" th:selected="${daMuon} == true">Đang mượn</option>
+                <option value="false" th:selected="${daMuon} == false">Chưa mượn</option>
+            </select>
+        </div>
+
+        <!-- Nút lọc -->
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> Lọc
+            </button>
+        </div>
+    </form>
+
     <!-- Bảng danh sách -->
     <table class="table table-striped table-bordered table-hover align-middle">
         <thead class="table-dark text-center">
         <tr>
             <th>ID</th>
-            <th th:text="#{device.id}">Mã Thiết Bị</th>
+
+            <!-- 🟦 Sắp xếp theo Mã thiết bị -->
+            <th>
+                <a th:href="@{/thiet-bi(
+                        sortField='maThietBi',
+                        sortDir=${reverseSortDir},
+                        keyword=${keyword},
+                        tinhTrang=${tinhTrang},
+                        daMuon=${daMuon}
+                    )}"
+                   class="text-white text-decoration-none">
+                    <span th:text="#{device.id}">Mã Thiết Bị</span>
+                    <i th:class="${sortDir == 'asc'} ? 'bi bi-arrow-down-short' : 'bi bi-arrow-up-short'"></i>
+                </a>
+            </th>
+
             <th th:text="#{device.name}">Tên Thiết Bị</th>
             <th th:text="#{device.desc}">Mô Tả</th>
             <th th:text="#{device.condition}">Tình Trạng</th>
@@ -43,14 +96,12 @@
 
             <!-- Hành động -->
             <td class="text-nowrap">
-                <!-- 🟦 Nút Sửa -->
                 <a class="btn btn-sm btn-primary me-2"
                    th:href="@{/thiet-bi/edit/{id}(id=${tb.id})}">
                     <i class="bi bi-pencil-square me-1"></i>
                     <span th:text="#{device.edit}">Sửa</span>
                 </a>
 
-                <!-- 🟥 Nút Xóa -->
                 <a class="btn btn-sm btn-danger"
                    th:href="@{/thiet-bi/delete/{id}(id=${tb.id})}"
                    th:onclick="|return confirm('#{confirm.delete}')|">
@@ -70,28 +121,23 @@
 
         <div class="card-body">
             <form th:action="@{/thiet-bi/add}" method="post">
-                <!-- Mã thiết bị -->
                 <div class="mb-3">
                     <label class="form-label fw-bold" th:text="#{device.id}">Mã Thiết Bị</label>
                     <input type="text" name="maThietBi" class="form-control" placeholder="Nhập mã thiết bị..." required>
                 </div>
 
-                <!-- Tên thiết bị -->
                 <div class="mb-3">
                     <label class="form-label fw-bold" th:text="#{device.name}">Tên Thiết Bị</label>
                     <input type="text" name="tenThietBi" class="form-control" placeholder="Nhập tên thiết bị..." required>
                 </div>
 
-                <!-- Mô tả -->
                 <div class="mb-3">
                     <label class="form-label fw-bold" th:text="#{device.desc}">Mô Tả</label>
                     <textarea name="moTa" class="form-control" rows="2" placeholder="Nhập mô tả..."></textarea>
                 </div>
 
-                <!-- Ẩn trường tình trạng mặc định -->
                 <input type="hidden" name="tinhTrang" value="true">
 
-                <!-- Nút thêm -->
                 <button type="submit" class="btn btn-success">
                     <i class="bi bi-plus-circle me-1"></i>
                     <span th:text="#{device.add.btn}">Thêm mới</span>

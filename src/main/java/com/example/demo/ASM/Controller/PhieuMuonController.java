@@ -5,7 +5,11 @@ import com.example.demo.ASM.Model.ThietBi;
 import com.example.demo.ASM.Repo.PhieuMuonRepo;
 import com.example.demo.ASM.Repo.ThietBiRepo;
 import com.example.demo.ASM.Service.MuonTraService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,59 +27,119 @@ public class PhieuMuonController {
     private final MuonTraService muonTraService;
 
     // 🟢 Hiển thị danh sách phiếu mượn
+    // 🟢 Hiển thị danh sách phiếu mượn
     @GetMapping
-    public String getAll(Model model) {
-        model.addAttribute("dsPhieuMuon", phieuMuonRepo.findAll());
-        // ✅ Chỉ hiển thị thiết bị còn hoạt động và chưa mượn
+    public String getAll(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(required = false) Integer thietBiId,
+            @RequestParam(defaultValue = "maPhieu") String sortField,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            Model model,
+            HttpSession session // ✅ thêm dòng này
+    ) {
+        // Gộp điều kiện lọc
+        Specification<PhieuMuon> spec = Specification
+                .where(PhieuMuonSpecification.keyword(keyword))
+                .and(PhieuMuonSpecification.ngayMuonBetween(fromDate, toDate))
+                .and(PhieuMuonSpecification.byThietBiId(thietBiId));
+
+        // 🟢 Sắp xếp
+        Sort sort = sortDir.equalsIgnoreCase("asc") ?
+                Sort.by(sortField).ascending() :
+                Sort.by(sortField).descending();
+
+        List<PhieuMuon> dsPhieuMuon = phieuMuonRepo.findAll(spec, sort);
+
+        // 🟢 Đưa dữ liệu ra view
+        model.addAttribute("dsPhieuMuon", dsPhieuMuon);
         model.addAttribute("dsThietBi", thietBiRepo.findByTinhTrangTrueAndDaMuonFalse());
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        model.addAttribute("thietBiId", thietBiId);
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
         model.addAttribute("pageTitle", "Quản lý Phiếu Mượn");
         model.addAttribute("activePage", "phieu");
+
+        // ✅ Lấy message từ session nếu có
+        Object message = session.getAttribute("message");
+        if (message != null) {
+            model.addAttribute("message", message);
+            session.removeAttribute("message"); // xóa để chỉ hiển thị 1 lần
+        }
+
         return "phieu-muon-list";
     }
+
+
+
 
     // 🟢 Thêm phiếu mượn mới — cho phép chọn ngày mượn
     @PostMapping("/add")
     public String add(@RequestParam String maPhieu,
                       @RequestParam LocalDate ngayMuon,
-                      @RequestParam(value = "thietBiIds", required = false) List<Integer> thietBiIds) {
+                      @RequestParam(value = "thietBiIds", required = false) List<Integer> thietBiIds,
+                      HttpSession session) {
         try {
             if (thietBiIds == null || thietBiIds.isEmpty()) {
                 throw new RuntimeException("Vui lòng chọn ít nhất 1 thiết bị để mượn!");
             }
 
             muonTraService.taoPhieuMuon(thietBiIds, maPhieu, ngayMuon);
+
+            // ✅ Lưu thông báo và mã phiếu vào Session
+            session.setAttribute("lastMaPhieu", maPhieu);
+            session.setAttribute("message", "Đã thêm phiếu mượn " + maPhieu + " thành công!");
+
             return "redirect:/phieu-muon";
         } catch (Exception e) {
             e.printStackTrace();
-            return "redirect:/phieu-muon?error=" + e.getMessage();
+            session.setAttribute("message", "❌ Lỗi khi thêm phiếu: " + e.getMessage());
+            return "redirect:/phieu-muon";
         }
     }
 
     // 🟢 Trả phiếu — tự động set ngày trả = LocalDate.now()
     @GetMapping("/return/{id}")
-    public String traPhieu(@PathVariable Integer id) {
+    public String traPhieu(@PathVariable Integer id, HttpSession session) {
         try {
-            muonTraService.traHetPhieu(id);
+            PhieuMuon pm = phieuMuonRepo.findById(id).orElse(null);
+            if (pm != null) {
+                muonTraService.traHetPhieu(id);
+                session.setAttribute("message", "✅ Đã trả thành công phiếu mượn " + pm.getMaPhieu());
+            } else {
+                session.setAttribute("message", "⚠️ Không tìm thấy phiếu mượn có ID: " + id);
+            }
         } catch (Exception e) {
             e.printStackTrace();
+            session.setAttribute("message", "❌ Lỗi khi trả phiếu: " + e.getMessage());
         }
         return "redirect:/phieu-muon";
     }
 
-    // 🟢 Xóa phiếu — trả hết thiết bị trước khi xóa
+
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable Integer id) {
+    public String delete(@PathVariable Integer id, HttpSession session) {
         try {
             PhieuMuon pm = phieuMuonRepo.findById(id).orElse(null);
             if (pm != null) {
                 muonTraService.traHetPhieu(id);
                 phieuMuonRepo.delete(pm);
+                session.setAttribute("message", "🗑️ Đã xóa phiếu mượn " + pm.getMaPhieu() + " thành công!");
+            } else {
+                session.setAttribute("message", "⚠️ Không tìm thấy phiếu mượn có ID: " + id);
             }
         } catch (Exception e) {
             e.printStackTrace();
+            session.setAttribute("message", "❌ Lỗi khi xóa phiếu: " + e.getMessage());
         }
         return "redirect:/phieu-muon";
     }
+
 
     // 🟢 Hiển thị form sửa phiếu
     @GetMapping("/edit/{id}")

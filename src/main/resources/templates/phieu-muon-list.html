@@ -7,14 +7,91 @@
 
     <!-- Tiêu đề -->
     <h3 class="mb-3" th:text="#{borrow.list}">Danh sách Phiếu Mượn</h3>
+    <!-- 🟢 Thông báo từ Session -->
+    <div th:if="${message}" class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        <span th:text="${message}">Thông báo</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+
+    <!-- 🔍 Form tìm kiếm & lọc -->
+    <form th:action="@{/phieu-muon}" method="get" class="row g-2 mb-3 align-items-end">
+
+        <!-- Từ khóa -->
+        <div class="col-md-3">
+            <label class="form-label fw-bold">Tìm kiếm</label>
+            <input type="text" name="keyword" th:value="${keyword}" class="form-control"
+                   placeholder="Nhập mã phiếu hoặc tên thiết bị...">
+        </div>
+
+        <!-- Khoảng ngày -->
+        <div class="col-md-3">
+            <label class="form-label fw-bold">Từ ngày</label>
+            <input type="date" name="fromDate" th:value="${fromDate}" class="form-control">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-bold">Đến ngày</label>
+            <input type="date" name="toDate" th:value="${toDate}" class="form-control">
+        </div>
+
+        <!-- Thiết bị -->
+        <div class="col-md-2">
+            <label class="form-label fw-bold">Thiết bị</label>
+            <select name="thietBiId" class="form-select">
+                <option value="">-- Tất cả --</option>
+                <option th:each="tb : ${dsThietBi}"
+                        th:value="${tb.id}"
+                        th:text="${tb.tenThietBi}"
+                        th:selected="${tb.id == thietBiId}">
+                </option>
+            </select>
+        </div>
+
+        <!-- Nút lọc -->
+        <div class="col-md-1 d-grid">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> Lọc
+            </button>
+        </div>
+    </form>
 
     <!-- Bảng danh sách phiếu mượn -->
     <table class="table table-striped table-bordered table-hover align-middle">
         <thead class="table-dark text-center">
         <tr>
             <th>ID</th>
-            <th th:text="#{borrow.id}">Mã Phiếu</th>
-            <th th:text="#{borrow.date}">Ngày Mượn</th>
+
+            <!-- ✅ Cột Mã Phiếu có thể sắp xếp -->
+            <th>
+                <a th:href="@{/phieu-muon(
+                    sortField='maPhieu',
+                    sortDir=${reverseSortDir},
+                    keyword=${keyword},
+                    fromDate=${fromDate},
+                    toDate=${toDate},
+                    thietBiId=${thietBiId}
+                )}" class="text-white text-decoration-none">
+                    <span th:text="#{borrow.id}">Mã Phiếu</span>
+                    <i th:class="${sortDir == 'asc'} ? 'bi bi-arrow-down-short' : 'bi bi-arrow-up-short'"></i>
+                </a>
+            </th>
+
+            <!-- ✅ Cột Ngày Mượn có thể sắp xếp -->
+            <th>
+                <a th:href="@{/phieu-muon(
+                    sortField='ngayMuon',
+                    sortDir=${reverseSortDir},
+                    keyword=${keyword},
+                    fromDate=${fromDate},
+                    toDate=${toDate},
+                    thietBiId=${thietBiId}
+                )}" class="text-white text-decoration-none">
+                    <span th:text="#{borrow.date}">Ngày Mượn</span>
+                    <i th:class="${sortField == 'ngayMuon' && sortDir == 'asc'} ? 'bi bi-arrow-down-short' : 'bi bi-arrow-up-short'"></i>
+                </a>
+            </th>
+
             <th th:text="#{borrow.status}">Trạng Thái</th>
             <th th:text="#{borrow.devices}">Thiết Bị</th>
             <th th:text="#{device.action}">Hành Động</th>
@@ -100,8 +177,7 @@
                     <div class="border rounded p-2" style="max-height:200px; overflow-y:auto;">
                         <div th:each="tb : ${dsThietBi}" class="form-check">
                             <input class="form-check-input" type="checkbox" name="thietBiIds" th:value="${tb.id}">
-                            <label class="form-check-label"
-                                   th:text="${tb.tenThietBi}"></label>
+                            <label class="form-check-label" th:text="${tb.tenThietBi}"></label>
                         </div>
                     </div>
                 </div>
